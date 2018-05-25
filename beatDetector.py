@@ -10,8 +10,7 @@ import numpy
 from recorder import *
 from time import perf_counter, sleep
 
-colors_list = ["red", "blue", "green"]
-colors_idx = 0;
+beats_idx = 0;
 
 bpm_list = []
 prev_beat = perf_counter()
@@ -48,9 +47,9 @@ def plot_audio_and_detect_beats():
         # print(curr_time - prev_beat)
         if curr_time - prev_beat > 60/180: # 180 BPM max
             # change the button color
-            global colors_idx
-            colors_idx += 1;
-            print("beat {}".format(colors_idx))
+            global beats_idx
+            beats_idx += 1;
+            print("beat {}".format(beats_idx))
             
             # change the button text
             global bpm_list
