@@ -5,18 +5,10 @@ http://www.swharden.com/blog/2013-05-09-realtime-fft-audio-visualization-with-py
 http://julip.co/2012/05/arduino-python-soundlight-spectrum/
 """
 
-import ui_plot
 import sys
 import numpy
-from PyQt4 import QtCore, QtGui
-import PyQt4.Qwt5 as Qwt
 from recorder import *
-from time import perf_counter
-
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    _fromUtf8 = lambda s: s
+from time import perf_counter, sleep
 
 colors_list = ["red", "blue", "green"]
 colors_idx = 0;
@@ -55,11 +47,10 @@ def plot_audio_and_detect_beats():
         curr_time = perf_counter()
         # print(curr_time - prev_beat)
         if curr_time - prev_beat > 60/180: # 180 BPM max
-            # print("beat")
             # change the button color
             global colors_idx
             colors_idx += 1;
-            uiplot.btnD.setStyleSheet("background-color: {:s}".format(colors_list[colors_idx % len(colors_list)]))
+            print("beat {}".format(colors_idx))
             
             # change the button text
             global bpm_list
@@ -71,7 +62,7 @@ def plot_audio_and_detect_beats():
                 bpm_avg = int(numpy.mean(bpm_list))
                 if abs(bpm_avg - bpm) < 35:
                     bpm_list.append(bpm)
-                uiplot.btnD.setText(_fromUtf8("BPM: {:d}".format(bpm_avg)))
+                # print("bpm: {:d}".format(bpm_avg))
             
             # reset the timer
             prev_beat = curr_time
@@ -89,41 +80,19 @@ def plot_audio_and_detect_beats():
     if y_avg < 10:
         bpm_list = []
         low_freq_avg_list = []
-        uiplot.btnD.setText(_fromUtf8("BPM"))
         # print("new song")
 
-    # plot the data
-    c.setData(xs, ys)
-    uiplot.qwtPlot.replot()
     input_recorder.newAudio = False
+    # print(bpm_list)
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    
-    win_plot = ui_plot.QtGui.QMainWindow()
-    uiplot = ui_plot.Ui_win_plot()
-    uiplot.setupUi(win_plot)
-    # uiplot.btnA.clicked.connect(plot_audio_and_detect_beats)
-    # uiplot.btnB.clicked.connect(lambda: uiplot.timer.setInterval(100.0))
-    # uiplot.btnC.clicked.connect(lambda: uiplot.timer.setInterval(10.0))
-    # uiplot.btnD.clicked.connect(lambda: uiplot.timer.setInterval(1.0))
-    c = Qwt.QwtPlotCurve()  
-    c.attach(uiplot.qwtPlot)
-    
-    uiplot.qwtPlot.setAxisScale(uiplot.qwtPlot.yLeft, 0, 100000)
-    
-    uiplot.timer = QtCore.QTimer()
-    uiplot.timer.start(1.0)
-    
-    win_plot.connect(uiplot.timer, QtCore.SIGNAL('timeout()'), plot_audio_and_detect_beats) 
-    
     input_recorder = InputRecorder()
     input_recorder.start()
 
-    ### DISPLAY WINDOWS
-    win_plot.show()
-    code = app.exec_()
+    while True:
+        plot_audio_and_detect_beats()
+        sleep(.01)
 
     # clean up
     input_recorder.close()
-    sys.exit(code)
+    sys.exit()
